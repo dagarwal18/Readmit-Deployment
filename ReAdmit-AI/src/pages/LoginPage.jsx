@@ -73,7 +73,7 @@ const LoginPage = () => {
             </motion.div>
           </div>
           <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 mb-1">Hospital Login</h2>
-          <p className="text-gray-400 text-sm">Access your healthcare dashboard</p>
+          <p className="text-gray-400 text-sm">Access your healthcare -</p>
         </motion.div>
         
         {error && (
