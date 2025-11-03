@@ -1,0 +1,34 @@
+{
+  "family": "readmit-ml-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::137812392325:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "readmit-ml-service",
+      "image": "137812392325.dkr.ecr.us-east-1.amazonaws.com/readmit-ml-service:latest",
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "PORT",
+          "value": "5000"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/readmit-ml-service",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
