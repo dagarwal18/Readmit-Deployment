@@ -19,30 +19,32 @@ pipeline {
                     def changedFiles = sh(script: "git diff --name-only HEAD~1 HEAD || true", returnStdout: true).trim()
                     echo "Changed files:\n${changedFiles}"
 
-                    BUILD_BACKEND = changedFiles.contains("Readmit-Backend/")
-                    BUILD_MICROSERVICE = changedFiles.contains("flask-reAdmit-microservice/")
-                    BUILD_FRONTEND = changedFiles.contains("ReAdmit-AI/")
+                    def BUILD_BACKEND = changedFiles.contains("Readmit-Backend/")
+                    def BUILD_MICROSERVICE = changedFiles.contains("flask-reAdmit-microservice/")
+                    def BUILD_FRONTEND = changedFiles.contains("ReAdmit-AI/")
 
                     if (!BUILD_BACKEND && !BUILD_MICROSERVICE && !BUILD_FRONTEND) {
                         error("No relevant changes detected in any service.")
                     }
+
+                    env.BUILD_BACKEND = BUILD_BACKEND.toString()
+                    env.BUILD_MICROSERVICE = BUILD_MICROSERVICE.toString()
+                    env.BUILD_FRONTEND = BUILD_FRONTEND.toString()
                 }
             }
         }
 
         stage('Login to ECR') {
             steps {
-                script {
-                    sh """
-                        aws ecr get-login-password --region $AWS_REGION \
-                        | docker login --username AWS --password-stdin 137812392325.dkr.ecr.us-east-1.amazonaws.com
-                    """
-                }
+                sh """
+                    aws ecr get-login-password --region $AWS_REGION \
+                    | docker login --username AWS --password-stdin 137812392325.dkr.ecr.us-east-1.amazonaws.com
+                """
             }
         }
 
         stage('Build & Push Backend') {
-            when { expression { return BUILD_BACKEND } }
+            when { expression { return env.BUILD_BACKEND == 'true' } }
             steps {
                 dir('Readmit-Backend') {
                     sh """
@@ -54,7 +56,7 @@ pipeline {
         }
 
         stage('Build & Push Microservice') {
-            when { expression { return BUILD_MICROSERVICE } }
+            when { expression { return env.BUILD_MICROSERVICE == 'true' } }
             steps {
                 dir('flask-reAdmit-microservice') {
                     sh """
@@ -66,7 +68,7 @@ pipeline {
         }
 
         stage('Build & Push Frontend') {
-            when { expression { return BUILD_FRONTEND } }
+            when { expression { return env.BUILD_FRONTEND == 'true' } }
             steps {
                 dir('ReAdmit-AI') {
                     sh """
@@ -78,37 +80,37 @@ pipeline {
         }
 
         stage('Deploy to ECS') {
-    steps {
-        script {
-            if (BUILD_BACKEND) {
-                sh """
-                    aws ecs update-service \
-                    --cluster readmit-cluster \
-                    --service readmit-backend-service-k0nf5j9s \
-                    --force-new-deployment \
-                    --region $AWS_REGION
-                """
-            }
-            if (BUILD_MICROSERVICE) {
-                sh """
-                    aws ecs update-service \
-                    --cluster readmit-cluster \
-                    --service readmit-ml-service-service-9v4p1ewh \
-                    --force-new-deployment \
-                    --region $AWS_REGION
-                """
-            }
-            if (BUILD_FRONTEND) {
-                sh """
-                    aws ecs update-service \
-                    --cluster readmit-cluster \
-                    --service readmit-frontend-service-caouxqp2 \
-                    --force-new-deployment \
-                    --region $AWS_REGION
-                """
+            steps {
+                script {
+                    if (env.BUILD_BACKEND == 'true') {
+                        sh """
+                            aws ecs update-service \
+                            --cluster readmit-cluster \
+                            --service readmit-backend-service-k0nf5j9s \
+                            --force-new-deployment \
+                            --region $AWS_REGION
+                        """
+                    }
+                    if (env.BUILD_MICROSERVICE == 'true') {
+                        sh """
+                            aws ecs update-service \
+                            --cluster readmit-cluster \
+                            --service readmit-ml-service-service-9v4p1ewh \
+                            --force-new-deployment \
+                            --region $AWS_REGION
+                        """
+                    }
+                    if (env.BUILD_FRONTEND == 'true') {
+                        sh """
+                            aws ecs update-service \
+                            --cluster readmit-cluster \
+                            --service readmit-frontend-service-caouxqp2 \
+                            --force-new-deployment \
+                            --region $AWS_REGION
+                        """
+                    }
+                }
             }
         }
-    }
-}
     }
 }
