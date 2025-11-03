@@ -77,7 +77,7 @@ pipeline {
             }
         }
 
-    stage('Deploy to ECS') {
+        stage('Deploy to ECS') {
     steps {
         script {
             if (BUILD_BACKEND) {
@@ -108,5 +108,7 @@ pipeline {
                 """
             }
         }
+    }
+}
     }
 }
