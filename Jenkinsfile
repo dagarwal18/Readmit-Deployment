@@ -77,19 +77,35 @@ pipeline {
             }
         }
 
-        stage('Deploy to ECS') {
-            steps {
-                script {
-                    if (BUILD_BACKEND) {
-                        sh "aws ecs update-service --cluster readmit-cluster --service backend-service --force-new-deployment --region $AWS_REGION"
-                    }
-                    if (BUILD_MICROSERVICE) {
-                        sh "aws ecs update-service --cluster readmit-cluster --service ml-service --force-new-deployment --region $AWS_REGION"
-                    }
-                    if (BUILD_FRONTEND) {
-                        sh "aws ecs update-service --cluster readmit-cluster --service frontend-service --force-new-deployment --region $AWS_REGION"
-                    }
-                }
+    stage('Deploy to ECS') {
+    steps {
+        script {
+            if (BUILD_BACKEND) {
+                sh """
+                    aws ecs update-service \
+                    --cluster readmit-cluster \
+                    --service readmit-backend-service-k0nf5j9s \
+                    --force-new-deployment \
+                    --region $AWS_REGION
+                """
+            }
+            if (BUILD_MICROSERVICE) {
+                sh """
+                    aws ecs update-service \
+                    --cluster readmit-cluster \
+                    --service readmit-ml-service-service-9v4p1ewh \
+                    --force-new-deployment \
+                    --region $AWS_REGION
+                """
+            }
+            if (BUILD_FRONTEND) {
+                sh """
+                    aws ecs update-service \
+                    --cluster readmit-cluster \
+                    --service readmit-frontend-service-caouxqp2 \
+                    --force-new-deployment \
+                    --region $AWS_REGION
+                """
             }
         }
     }
